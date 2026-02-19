@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.Rendering;
 using UnityEngine.Serialization;
 
 public class RobberBehaviour : MonoBehaviour
@@ -9,6 +10,7 @@ public class RobberBehaviour : MonoBehaviour
     [FormerlySerializedAs("Diamond")] public GameObject diamond;
     public GameObject van;
     public GameObject backDoor;
+    public GameObject frontDoor;
     NavMeshAgent _agent;
     
 
@@ -20,6 +22,9 @@ public class RobberBehaviour : MonoBehaviour
 
     private ActionState _state = ActionState.Idle;
     
+    [FormerlySerializedAs("MoneyStolen")] [Range(0,1000)]
+    public int moneyStolen = 800;
+    
     Node.Status _treeStatus = Node.Status.Running;
     
     public void Start()
@@ -28,32 +33,83 @@ public class RobberBehaviour : MonoBehaviour
         
         _tree = new BehaviourTree();
         Sequence steal = new Sequence("Steal");
-        Leaf goToBackDoor = new Leaf("Go To Back Door", GoToBackDoor);
         Leaf goToBank = new Leaf("Go To Bank", GoToBank);
+        Leaf hasMoney = new Leaf("Has Money", HasMoney);
+        Leaf goToBackDoor = new Leaf("Go To Back Door", GoToBackDoor);
+        Leaf goToFrontDoor = new Leaf("Go To Front Door", GoToFrontDoor);
         Leaf goToVan = new Leaf("Go To Van", GoToVan);
+        Selector openDoor = new Selector("Open Door");
         
-        steal.AddChild(goToBackDoor);
+        openDoor.AddChild(goToFrontDoor);
+        openDoor.AddChild(goToBackDoor);
+        
+        steal.AddChild(hasMoney);
+        steal.AddChild(openDoor);
         steal.AddChild(goToBank);
-        steal.AddChild(goToBackDoor);
+        //steal.AddChild(goToBackDoor);
         steal.AddChild(goToVan);
         _tree.AddChild(steal);
         
         _tree.PrintTree();
     }
-
-    private Node.Status GoToBackDoor()
+    
+    public Node.Status HasMoney()
     {
-        return GoToLocation(backDoor.transform.position);
+        if (moneyStolen >= 500)
+        {
+            return Node.Status.Failure;
+        }
+
+        return Node.Status.Success;
     }
     
     private Node.Status GoToBank()
     {
-        return GoToLocation(diamond.transform.position);
+        Node.Status status = GoToLocation(diamond.transform.position);
+        if (status == Node.Status.Success)
+        {
+            diamond.transform.parent = this.gameObject.transform;
+        }
+        return status;
+    }
+
+    private Node.Status GoToBackDoor()
+    {
+        return GoToDoor(backDoor);
+    }
+    
+    private Node.Status GoToFrontDoor()
+    {
+        return GoToDoor(frontDoor);
     }
     
     private Node.Status GoToVan()
     {
-        return GoToLocation(van.transform.position);
+        Node.Status status = GoToLocation(van.transform.position);
+        if (status == Node.Status.Success)
+        {
+            moneyStolen += 300;
+            diamond.SetActive(false);
+        }
+        return status;
+    }
+
+    public Node.Status GoToDoor(GameObject door)
+    {
+        Node.Status status = GoToLocation(door.transform.position);
+        if (status == Node.Status.Success)
+        {
+            if (!door.GetComponent<Lock>().IsLocked)
+            {
+                door.SetActive(false);
+                return Node.Status.Success;
+            }
+            return Node.Status.Failure;
+        }
+        else
+        {
+            return status;
+        }
     }
     
     Node.Status GoToLocation(Vector3 destination)
@@ -79,7 +135,7 @@ public class RobberBehaviour : MonoBehaviour
 
     public void Update()
     {
-        if (_treeStatus == Node.Status.Running)
+        if (_treeStatus != Node.Status.Success)
         {
            _treeStatus =  _tree.Process();
         }
