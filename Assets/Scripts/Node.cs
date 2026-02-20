@@ -14,6 +14,7 @@ public class Node
     
     public int CurrentChild = 0;
     public string Name;
+    public int SortOrder;
     public Node(){}
     
     public Node(string n)
@@ -21,6 +22,12 @@ public class Node
         Name = n;
     }
 
+    public Node(string n, int sortOrder)
+    {
+        Name = n;
+        SortOrder = sortOrder;
+    }
+    
     public virtual Status Process()
     {
         return Children[CurrentChild].Process();

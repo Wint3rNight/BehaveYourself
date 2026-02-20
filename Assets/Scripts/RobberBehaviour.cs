@@ -7,9 +7,11 @@ using UnityEngine.Serialization;
 public class RobberBehaviour : BehaviourTreeAgent
 {
     public GameObject diamond;
+    public GameObject painting;
     public GameObject van;
     public GameObject backDoor;
     public GameObject frontDoor;
+    GameObject pickup;
     
     [Range(0,1000)]
     public int moneyStolen = 800;
@@ -20,12 +22,15 @@ public class RobberBehaviour : BehaviourTreeAgent
     {        
         base.Start();
         Sequence steal = new Sequence("Steal");
-        Leaf goToBank = new Leaf("Go To Bank", GoToBank);
+        Leaf goToBank = new Leaf("Go To Bank", GoToBank, 1);
+        Leaf goToPainting = new Leaf("Go To Bank", GoToPainting, 2);
         Leaf hasMoney = new Leaf("Has Money", HasMoney);
         Leaf goToBackDoor = new Leaf("Go To Back Door", GoToBackDoor);
         Leaf goToFrontDoor = new Leaf("Go To Front Door", GoToFrontDoor);
         Leaf goToVan = new Leaf("Go To Van", GoToVan);
         Selector openDoor = new Selector("Open Door");
+        PrioritySelector selectObjectToSteal = new PrioritySelector("Select Object To Steal");
+
         
         Invertor invertMoney = new Invertor("Invert Money");
         invertMoney.AddChild(hasMoney);
@@ -35,7 +40,11 @@ public class RobberBehaviour : BehaviourTreeAgent
         
         steal.AddChild(invertMoney);
         steal.AddChild(openDoor);
-        steal.AddChild(goToBank);
+        
+        selectObjectToSteal.AddChild(goToBank);
+        selectObjectToSteal.AddChild(goToPainting);
+        
+        steal.AddChild(selectObjectToSteal);
         //steal.AddChild(goToBackDoor);
         steal.AddChild(goToVan);
         Tree.AddChild(steal);
@@ -46,7 +55,7 @@ public class RobberBehaviour : BehaviourTreeAgent
     public Node.Status HasMoney()
     {
         if (moneyStolen < 500)
-        {
+        {   
             return Node.Status.Failure;
         }
 
@@ -55,13 +64,34 @@ public class RobberBehaviour : BehaviourTreeAgent
     
     private Node.Status GoToBank()
     {
+        if (!diamond.activeSelf)
+        {
+            return Node.Status.Failure;
+        }
         Node.Status status = GoToLocation(diamond.transform.position);
         if (status == Node.Status.Success)
         {
             diamond.transform.parent = this.gameObject.transform;
+            pickup = diamond;
         }
         return status;
     }
+    
+    private Node.Status GoToPainting()
+    {
+        if (!painting.activeSelf)
+        {
+            return Node.Status.Failure;
+        }
+        Node.Status status = GoToLocation(painting.transform.position);
+        if (status == Node.Status.Success)
+        {
+            painting.transform.parent = this.gameObject.transform;
+            pickup = painting;
+        }
+        return status;
+    }
+
 
     private Node.Status GoToBackDoor()
     {
@@ -79,7 +109,7 @@ public class RobberBehaviour : BehaviourTreeAgent
         if (status == Node.Status.Success)
         {
             moneyStolen += 300;
-            diamond.SetActive(false);
+            pickup.SetActive(false);
         }
         return status;
     }
@@ -91,7 +121,7 @@ public class RobberBehaviour : BehaviourTreeAgent
         {
             if (!door.GetComponent<Lock>().IsLocked)
             {
-                door.SetActive(false);
+                door.GetComponent<NavMeshObstacle>().enabled = false;
                 return Node.Status.Success;
             }
             return Node.Status.Failure;

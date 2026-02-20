@@ -17,6 +17,10 @@ public class BehaviourTree : Node
 
     public override Status Process()
     {
+        if (Children.Count == 0)
+        {
+            return Status.Success;
+        }
         return Children[CurrentChild].Process();
     }
 

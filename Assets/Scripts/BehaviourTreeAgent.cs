@@ -1,8 +1,12 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.Rendering;
 using UnityEngine.Serialization;
+using Random = UnityEngine.Random;
+
 
 public class BehaviourTreeAgent : MonoBehaviour
 {
@@ -19,11 +23,15 @@ public class BehaviourTreeAgent : MonoBehaviour
     [FormerlySerializedAs("_state")] public ActionState state = ActionState.Idle;
     
     [FormerlySerializedAs("_treeStatus")] public Node.Status treeStatus = Node.Status.Running;
+
+    private WaitForSeconds _waitForSeconds;
     
     public void Start()
     {
         agent = this.GetComponent<NavMeshAgent>();
         Tree = new BehaviourTree();
+        _waitForSeconds = new WaitForSeconds(Random.Range(0.1f, 1f));
+        StartCoroutine("Behave");
     }
     
     public Node.Status GoToLocation(Vector3 destination)
@@ -47,11 +55,12 @@ public class BehaviourTreeAgent : MonoBehaviour
         return Node.Status.Running;
     }
 
-    public void Update()
+    IEnumerator Behave()
     {
-        if (treeStatus != Node.Status.Success)
+        while (true)
         {
-           treeStatus =  Tree.Process();
+            treeStatus = Tree.Process();
+            yield return _waitForSeconds;
         }
     }
 }  

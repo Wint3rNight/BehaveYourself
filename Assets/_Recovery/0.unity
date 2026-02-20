@@ -1832,7 +1832,7 @@ NavMeshAgent:
   m_Enabled: 1
   m_AgentTypeID: 0
   m_Radius: 0.5
-  m_Speed: 3.5
+  m_Speed: 10
   m_Acceleration: 8
   avoidancePriority: 50
   m_AngularSpeed: 120
@@ -1856,8 +1856,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 11338567174519c4a92ee8b05b37531b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RobberBehaviour
-  agent: {fileID: 0}
+  agent: {fileID: 642336162}
+  state: 0
   treeStatus: 2
+  diamond: {fileID: 1550492363}
+  painting: {fileID: 1904932022}
+  van: {fileID: 2020014279}
+  backDoor: {fileID: 919599686}
+  frontDoor: {fileID: 1791870521}
+  moneyStolen: 800
 --- !u!1 &716268924
 GameObject:
   m_ObjectHideFlags: 0
@@ -6358,6 +6365,11 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1992935634}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &2020014279 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 647a124cd5c1147a793fcacc25f6be1a, type: 3}
+  m_PrefabInstance: {fileID: 631430678}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &2063104220
 GameObject:
   m_ObjectHideFlags: 0
