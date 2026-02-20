@@ -12,11 +12,15 @@ public class RobberBehaviour : BehaviourTreeAgent
     public GameObject backDoor;
     public GameObject frontDoor;
     GameObject pickup;
+
+    public GameObject[] art;
     
     [Range(0,1000)]
     public int moneyStolen = 800;
     
     Node.Status _treeStatus = Node.Status.Running;
+    private Leaf _goToBackDoor;
+    private Leaf _goToFrontDoor;
     
     new void Start()
     {        
@@ -25,24 +29,31 @@ public class RobberBehaviour : BehaviourTreeAgent
         Leaf goToBank = new Leaf("Go To Bank", GoToBank, 1);
         Leaf goToPainting = new Leaf("Go To Bank", GoToPainting, 2);
         Leaf hasMoney = new Leaf("Has Money", HasMoney);
-        Leaf goToBackDoor = new Leaf("Go To Back Door", GoToBackDoor);
-        Leaf goToFrontDoor = new Leaf("Go To Front Door", GoToFrontDoor);
+        
+        Leaf goToArt1 = new Leaf("Go To Art 1", GoToArt1);
+        Leaf goToArt2 = new Leaf("Go To Art 2", GoToArt2);
+        Leaf goToArt3 = new Leaf("Go To Art 3", GoToArt3);
+        
+        _goToBackDoor = new Leaf("Go To Back Door", GoToBackDoor,2);
+        _goToFrontDoor = new Leaf("Go To Front Door", GoToFrontDoor,1);
         Leaf goToVan = new Leaf("Go To Van", GoToVan);
-        Selector openDoor = new Selector("Open Door");
-        PrioritySelector selectObjectToSteal = new PrioritySelector("Select Object To Steal");
+        
+        PrioritySelector openDoor = new PrioritySelector("Open Door");
+        RandomSelector selectObjectToSteal = new RandomSelector("Select Object To Steal");
 
         
         Invertor invertMoney = new Invertor("Invert Money");
         invertMoney.AddChild(hasMoney);
         
-        openDoor.AddChild(goToFrontDoor);
-        openDoor.AddChild(goToBackDoor);
+        openDoor.AddChild(_goToFrontDoor);
+        openDoor.AddChild(_goToBackDoor);
         
         steal.AddChild(invertMoney);
         steal.AddChild(openDoor);
         
-        selectObjectToSteal.AddChild(goToBank);
-        selectObjectToSteal.AddChild(goToPainting);
+        selectObjectToSteal.AddChild(goToArt1);
+        selectObjectToSteal.AddChild(goToArt2);
+        selectObjectToSteal.AddChild(goToArt3);
         
         steal.AddChild(selectObjectToSteal);
         //steal.AddChild(goToBackDoor);
@@ -51,7 +62,52 @@ public class RobberBehaviour : BehaviourTreeAgent
         
         Tree.PrintTree();
     }
-    
+
+    private Node.Status GoToArt1()
+    {
+        if (!art[0].activeSelf)
+        {
+            return Node.Status.Failure;
+        }
+        Node.Status status = GoToLocation(art[0].transform.position);
+        if (status == Node.Status.Success)
+        {
+            art[0].transform.parent = this.gameObject.transform;
+            pickup = art[0];
+        }
+        return status;
+    }
+
+    private Node.Status GoToArt2()
+    {
+        if (!art[1].activeSelf)
+        {
+            return Node.Status.Failure;
+        }
+        Node.Status status = GoToLocation(art[1].transform.position);
+        if (status == Node.Status.Success)
+        {
+            art[1].transform.parent = this.gameObject.transform;
+            pickup = art[1];
+        }
+        return status;  
+    }
+
+    private Node.Status GoToArt3()
+    {
+        if (!art[2].activeSelf)
+        {
+            return Node.Status.Failure;
+        }
+        Node.Status status = GoToLocation(art[2].transform.position);
+        if (status == Node.Status.Success)
+        {
+            art[2].transform.parent = this.gameObject.transform;
+            pickup = art[2];
+        }
+        return status;   
+    }
+
     public Node.Status HasMoney()
     {
         if (moneyStolen < 500)
@@ -95,12 +151,30 @@ public class RobberBehaviour : BehaviourTreeAgent
 
     private Node.Status GoToBackDoor()
     {
-        return GoToDoor(backDoor);
+        Node.Status status = GoToDoor(backDoor);
+        if(status==Node.Status.Failure)
+        {
+            _goToBackDoor.SortOrder=10;
+        }
+        else
+        {
+            _goToBackDoor.SortOrder=1;
+        }
+        return status;
     }
     
     private Node.Status GoToFrontDoor()
     {
-        return GoToDoor(frontDoor);
+        Node.Status status = GoToDoor(frontDoor);
+        if(status==Node.Status.Failure)
+        {
+            _goToFrontDoor.SortOrder=10;
+        }
+        else
+        {
+            _goToFrontDoor.SortOrder=1;
+        }
+        return status;
     }
     
     private Node.Status GoToVan()

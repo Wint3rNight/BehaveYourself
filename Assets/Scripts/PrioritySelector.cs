@@ -29,9 +29,14 @@ public class PrioritySelector : Node
 
         if (childStatus == Status.Success)
         {
+            //Children[CurrentChild].SortOrder = 1;
             CurrentChild = 0;
             return Status.Success;
         }
+        /*else
+        {
+            Children[CurrentChild].SortOrder = 10;
+        }*/
 
         CurrentChild++;
         if (CurrentChild >= Children.Count)
@@ -53,14 +58,10 @@ public class PrioritySelector : Node
             if(array[j].SortOrder < pivot.SortOrder)
             {
                 lowIndex++;
-                Node temp = array[lowIndex];
-                array[lowIndex] = array[j];
-                array[j] = temp;
+                (array[lowIndex], array[j]) = (array[j], array[lowIndex]);
             }
         }
-        Node temp1 = array[lowIndex + 1];
-        array[lowIndex + 1] = array[high];
-        array[high] = temp1;
+        (array[lowIndex + 1], array[high]) = (array[high], array[lowIndex + 1]);
         return lowIndex + 1;
     }
     
