@@ -20,7 +20,7 @@ public class RobberBehaviour : BehaviourTreeAgent
     [Range(0,1000)]
     public int moneyStolen = 800;
     
-    Node.Status _treeStatus = Node.Status.Running;
+    //Node.Status _treeStatus = Node.Status.Running;
     private Leaf _goToBackDoor;
     private Leaf _goToFrontDoor;
     
@@ -44,26 +44,44 @@ public class RobberBehaviour : BehaviourTreeAgent
         Leaf goToVan = new Leaf("Go To Van", GoToVan);
         PrioritySelector openDoor = new PrioritySelector("Open Door");
         
+        Sequence runAway = new Sequence("Run Away");
+        Leaf canSeeCop = new Leaf("Can See Cop?", CanSeeCop);
+        Leaf fleeFromCop = new Leaf("Flee From Cop", FleeFromCop);
+        
         Invertor invertMoney = new Invertor("Invert Money");
         invertMoney.AddChild(hasMoney);
         
         openDoor.AddChild(_goToFrontDoor);
         openDoor.AddChild(_goToBackDoor);
         
-        steal.AddChild(invertMoney);
-        steal.AddChild(openDoor);
-        
-        steal.AddChild(selectObjectToSteal);
-        steal.AddChild(goToVan);
-        
-        Sequence runAway = new Sequence("Run Away");
-        Leaf canSeeCop = new Leaf("Can See Cop?", CanSeeCop);
-        Leaf fleeFromCop = new Leaf("Flee From Cop", FleeFromCop);
-        
         runAway.AddChild(canSeeCop);
         runAway.AddChild(fleeFromCop);
         
-        Tree.AddChild(runAway);
+        Invertor cantSeeCop = new Invertor("Can't See Cop");
+        cantSeeCop.AddChild(canSeeCop);
+        
+        Sequence s1 = new Sequence("s1");
+        s1.AddChild(invertMoney);
+        Sequence s2 = new Sequence("s2");
+        s2.AddChild(cantSeeCop);
+        s2.AddChild(openDoor);
+        Sequence s3 = new Sequence("s3");
+        s3.AddChild(cantSeeCop);
+        s3.AddChild(selectObjectToSteal);
+        Sequence s4 = new Sequence("s4");
+        s4.AddChild(cantSeeCop);
+        s4.AddChild(goToVan);
+        
+        steal.AddChild(s1);
+        steal.AddChild(s2);
+        steal.AddChild(s3);
+        steal.AddChild(s4);
+        
+        Selector beThief = new Selector("Be Thief");
+        beThief.AddChild(steal);
+        beThief.AddChild(runAway);
+        
+        Tree.AddChild(beThief);
         
         Tree.PrintTree();
     }
