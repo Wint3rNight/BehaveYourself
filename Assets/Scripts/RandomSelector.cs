@@ -24,6 +24,7 @@ public class RandomSelector : Node
         if (childStatus == Status.Success)
         {
             CurrentChild = 0;
+            _shuffled = false;
             return Status.Success;
         }
 
@@ -31,6 +32,7 @@ public class RandomSelector : Node
         if (CurrentChild >= Children.Count)
         {
             CurrentChild = 0;
+            _shuffled = false;
             return Status.Failure;
         }
         

@@ -11,7 +11,7 @@ using Random = UnityEngine.Random;
 public class BehaviourTreeAgent : MonoBehaviour
 {
     public BehaviourTree Tree;
-    [FormerlySerializedAs("_agent")] public NavMeshAgent agent;
+    public NavMeshAgent agent;
     
 
     public enum ActionState
@@ -20,11 +20,11 @@ public class BehaviourTreeAgent : MonoBehaviour
         Working
     }
     
-    [FormerlySerializedAs("_state")] public ActionState state = ActionState.Idle;
-    
-    [FormerlySerializedAs("_treeStatus")] public Node.Status treeStatus = Node.Status.Running;
+    public ActionState state = ActionState.Idle;
+    public Node.Status treeStatus = Node.Status.Running;
 
     private WaitForSeconds _waitForSeconds;
+    Vector3 _rememberedLocation;
     
     public void Start()
     {
@@ -32,6 +32,35 @@ public class BehaviourTreeAgent : MonoBehaviour
         Tree = new BehaviourTree();
         _waitForSeconds = new WaitForSeconds(Random.Range(0.1f, 1f));
         StartCoroutine("Behave");
+    }
+
+    public Node.Status CanSee(Vector3 target, string tag, float viewDistance, float fieldOfView)
+    {
+        Vector3 directionToTarget = target - this.transform.position;
+        float angleToTarget = Vector3.Angle(directionToTarget, this.transform.forward);
+
+        if (angleToTarget < fieldOfView && directionToTarget.magnitude <= viewDistance)
+        {
+            RaycastHit hit;
+            if (Physics.Raycast(this.transform.position, directionToTarget, out hit))
+            {
+                if (hit.collider.gameObject.CompareTag(tag))
+                {
+                    return Node.Status.Success;
+                }
+            }
+        }
+        return Node.Status.Failure;
+    }
+
+    public Node.Status Flee(Vector3 location, float fleeDistance)
+    {
+        if (state == ActionState.Idle)
+        {
+            _rememberedLocation = this.transform.position+(transform.position-location).normalized*fleeDistance;
+        }
+
+        return GoToLocation(_rememberedLocation);
     }
     
     public Node.Status GoToLocation(Vector3 destination)

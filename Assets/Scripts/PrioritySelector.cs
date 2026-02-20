@@ -4,6 +4,7 @@ using UnityEngine;
 public class PrioritySelector : Node
 {
     Node[] _nodeArray;
+    bool _isOrdered = false;
     
     public PrioritySelector(string name)
     {
@@ -19,7 +20,11 @@ public class PrioritySelector : Node
 
     public override Status Process()
     {
-        OrderNodes();
+        if (!_isOrdered)
+        {
+            OrderNodes();
+            _isOrdered = true;
+        }
         
         Status childStatus = Children[CurrentChild].Process();
         if (childStatus == Status.Running)
@@ -31,6 +36,7 @@ public class PrioritySelector : Node
         {
             //Children[CurrentChild].SortOrder = 1;
             CurrentChild = 0;
+            _isOrdered = false;
             return Status.Success;
         }
         /*else
@@ -42,6 +48,7 @@ public class PrioritySelector : Node
         if (CurrentChild >= Children.Count)
         {
             CurrentChild = 0;
+            _isOrdered = false;
             return Status.Failure;
         }
         
