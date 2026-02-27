@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -35,6 +36,17 @@ public class VisitorBehaviour : BehaviourTreeAgent
         beVisitor.AddChild(viewArt);
 
         Tree.AddChild(beVisitor);
+
+        StartCoroutine(IncreaseBoredom());
+    }
+
+    IEnumerator IncreaseBoredom()
+    {
+        while (true)
+        {
+            boredomThreshold = Mathf.Clamp(boredomThreshold + 20, 0, 1000);
+            yield return new WaitForSeconds(UnityEngine.Random.Range(1f, 5f));
+        }
     }
 
     private Node.Status GoToArt(int i)
@@ -44,6 +56,10 @@ public class VisitorBehaviour : BehaviourTreeAgent
             return Node.Status.Failure;
         }
         Node.Status status = GoToLocation(art[i].transform.position);
+        if (status == Node.Status.Success)
+        {
+            boredomThreshold = Mathf.Clamp(boredomThreshold - 500, 0, 1000);
+        }
         return status;
     } 
 

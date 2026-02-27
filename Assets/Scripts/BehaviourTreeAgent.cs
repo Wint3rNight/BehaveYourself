@@ -23,7 +23,7 @@ public class BehaviourTreeAgent : MonoBehaviour
     public ActionState state = ActionState.Idle;
     public Node.Status treeStatus = Node.Status.Running;
 
-    private WaitForSeconds _waitForSeconds;
+    public WaitForSeconds _waitForSeconds;
     Vector3 _rememberedLocation;
     
     public virtual void Start()

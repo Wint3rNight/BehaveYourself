@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.Rendering;
@@ -97,6 +98,17 @@ public class RobberBehaviour : BehaviourTreeAgent
         Tree.AddChild(beThief);
         
         Tree.PrintTree();
+
+        StartCoroutine(DecreaseMoney());
+    }
+
+        IEnumerator DecreaseMoney()
+    {
+        while (true)
+        {
+            moneyStolen = Mathf.Clamp(moneyStolen - 50, 0, 1000);
+            yield return new WaitForSeconds(UnityEngine.Random.Range(1f, 5f));
+        }
     }
 
 
