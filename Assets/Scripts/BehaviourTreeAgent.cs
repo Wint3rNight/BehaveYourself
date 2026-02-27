@@ -12,20 +12,20 @@ public class BehaviourTreeAgent : MonoBehaviour
 {
     public BehaviourTree Tree;
     public NavMeshAgent agent;
-    
+
 
     public enum ActionState
     {
         Idle,
         Working
     }
-    
+
     public ActionState state = ActionState.Idle;
     public Node.Status treeStatus = Node.Status.Running;
 
     public WaitForSeconds _waitForSeconds;
     Vector3 _rememberedLocation;
-    
+
     public virtual void Start()
     {
         agent = this.GetComponent<NavMeshAgent>();
@@ -53,6 +53,18 @@ public class BehaviourTreeAgent : MonoBehaviour
         return Node.Status.Failure;
     }
 
+    public Node.Status IsOpen()
+    {
+        if(Blackboard.Instance.timeOfDay <= 8 || Blackboard.Instance.timeOfDay >= 18)
+        {
+            return Node.Status.Failure;
+        }
+        else
+        {
+            return Node.Status.Success;
+        }
+    }
+
     public Node.Status Flee(Vector3 location, float fleeDistance)
     {
         if (state == ActionState.Idle)
@@ -62,7 +74,7 @@ public class BehaviourTreeAgent : MonoBehaviour
 
         return GoToLocation(_rememberedLocation);
     }
-    
+
     public Node.Status GoToLocation(Vector3 destination)
     {
         float distToTarget = Vector3.Distance(destination, this.transform.position);
@@ -110,4 +122,4 @@ public class BehaviourTreeAgent : MonoBehaviour
             yield return _waitForSeconds;
         }
     }
-}  
+}

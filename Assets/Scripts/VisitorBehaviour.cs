@@ -102,16 +102,4 @@ public class VisitorBehaviour : BehaviourTreeAgent
             return Node.Status.Success;
         }
     }
-
-        public Node.Status IsOpen()
-    {
-        if(Blackboard.Instance.timeOfDay <= 8 || Blackboard.Instance.timeOfDay >= 18)
-        {
-            return Node.Status.Failure;
-        }
-        else
-        {
-            return Node.Status.Success;
-        }
-    }
 }
