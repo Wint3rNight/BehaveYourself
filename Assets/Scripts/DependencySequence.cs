@@ -1,15 +1,29 @@
 using UnityEngine;
+using UnityEngine.AI;
 
-public class Sequence : Node
+public class DependencySequence : Node
 {
-    public Sequence(string name)
+    private BehaviourTree _dependency;
+    private NavMeshAgent _agent;
+    public DependencySequence(string name, BehaviourTree d, NavMeshAgent a)
     {
         Name = name;
+        _dependency = d;
+        _agent = a;
     }
 
     public override Status Process()
     {
-        Debug.Log("Sequence: " + Name + " processing child " + CurrentChild);
+        if (_dependency.Process()==Status.Failure)
+        {
+            _agent.ResetPath();
+            foreach (Node n in Children)
+            {
+                n.Reset();
+            }
+            return Status.Failure;
+        }
+        
         Status childStatus = Children[CurrentChild].Process();
         if (childStatus == Status.Running)
         {
@@ -18,21 +32,16 @@ public class Sequence : Node
 
         if (childStatus == Status.Failure)
         {
-            CurrentChild = 0;
-            foreach (Node n in Children)
-            {
-                n.Reset();
-            }
             return childStatus;
         }
-
+        
         CurrentChild++;
         if (CurrentChild >= Children.Count)
         {
             CurrentChild = 0;
             return Status.Success;
         }
-
+        
         return Status.Running;
     }
 }

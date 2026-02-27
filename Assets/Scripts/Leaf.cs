@@ -10,7 +10,7 @@ public class Leaf : Node
     
     public int Index;
 
-    public Leaf(){ }
+    public Leaf(string v) { }
 
     public Leaf(string name, Tick processMethod)
     {
@@ -34,14 +34,20 @@ public class Leaf : Node
     
     public override Status Process()
     {
+        Node.Status s;
         if (ProcessMethod != null)
         {
-            return ProcessMethod();
+            s = ProcessMethod();
         }
         else if (ProcessMethodMultiple != null)
         {
-            return ProcessMethodMultiple(Index);
+            s = ProcessMethodMultiple(Index);
         }
-        return Status.Failure;
+        else
+        {
+            s = Status.Failure;
+        }
+        Debug.Log(Name+ " "+ s);
+        return s;
     }
 }

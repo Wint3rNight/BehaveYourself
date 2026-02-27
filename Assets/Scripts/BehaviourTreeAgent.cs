@@ -26,7 +26,7 @@ public class BehaviourTreeAgent : MonoBehaviour
     private WaitForSeconds _waitForSeconds;
     Vector3 _rememberedLocation;
     
-    public void Start()
+    public virtual void Start()
     {
         agent = this.GetComponent<NavMeshAgent>();
         Tree = new BehaviourTree();
@@ -82,6 +82,24 @@ public class BehaviourTreeAgent : MonoBehaviour
             return Node.Status.Success;
         }
         return Node.Status.Running;
+    }
+
+    public Node.Status GoToDoor(GameObject door)
+    {
+        Node.Status status = GoToLocation(door.transform.position);
+        if (status == Node.Status.Success)
+        {
+            if (!door.GetComponent<Lock>().IsLocked)
+            {
+                door.GetComponent<NavMeshObstacle>().enabled = false;
+                return Node.Status.Success;
+            }
+            return Node.Status.Failure;
+        }
+        else
+        {
+            return status;
+        }
     }
 
     IEnumerator Behave()

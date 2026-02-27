@@ -27,7 +27,6 @@ public class RobberBehaviour : BehaviourTreeAgent
     new void Start()
     {        
         base.Start();
-        Sequence steal = new Sequence("Steal");
         Leaf goToBank = new Leaf("Go To Bank", GoToBank, 1);
         Leaf goToPainting = new Leaf("Go To Bank", GoToPainting, 2);
         Leaf hasMoney = new Leaf("Has Money", HasMoney);
@@ -72,20 +71,35 @@ public class RobberBehaviour : BehaviourTreeAgent
         s4.AddChild(cantSeeCop);
         s4.AddChild(goToVan);
         
-        steal.AddChild(s1);
+        /*steal.AddChild(s1);
         steal.AddChild(s2);
         steal.AddChild(s3);
-        steal.AddChild(s4);
+        steal.AddChild(s4);*/
+        BehaviourTree stealConditions = new BehaviourTree();
+        Sequence conditions = new Sequence("Stealing Conditions");
+        conditions.AddChild(cantSeeCop);
+        conditions.AddChild(invertMoney);
+        stealConditions.AddChild(conditions);
+        DependencySequence steal = new DependencySequence("Steal",stealConditions,agent);
+        //steal.AddChild(invertMoney);
+        steal.AddChild(openDoor);
+        steal.AddChild(selectObjectToSteal);
+        steal.AddChild(goToVan);
+        
+        Selector stealWithFallback = new Selector("Steal With Fallback");
+        stealWithFallback.AddChild(steal);
+        stealWithFallback.AddChild(goToVan);
         
         Selector beThief = new Selector("Be Thief");
-        beThief.AddChild(steal);
+        beThief.AddChild(stealWithFallback);
         beThief.AddChild(runAway);
         
         Tree.AddChild(beThief);
         
         Tree.PrintTree();
     }
-    
+
+
     public Node.Status CanSeeCop()
     {
         return CanSee(cop.transform.position, "Cop", 10, 90);
@@ -95,7 +109,7 @@ public class RobberBehaviour : BehaviourTreeAgent
     {
         return Flee(cop.transform.position, 10);
     }
-    
+
     public Node.Status HasMoney()
     {
         if (moneyStolen < 500)
@@ -188,23 +202,5 @@ public class RobberBehaviour : BehaviourTreeAgent
             _pickup.SetActive(false);
         }
         return status;
-    }
-
-    public Node.Status GoToDoor(GameObject door)
-    {
-        Node.Status status = GoToLocation(door.transform.position);
-        if (status == Node.Status.Success)
-        {
-            if (!door.GetComponent<Lock>().IsLocked)
-            {
-                door.GetComponent<NavMeshObstacle>().enabled = false;
-                return Node.Status.Success;
-            }
-            return Node.Status.Failure;
-        }
-        else
-        {
-            return status;
-        }
     }
 }  
