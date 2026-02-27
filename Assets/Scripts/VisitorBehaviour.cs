@@ -15,11 +15,11 @@ public class VisitorBehaviour : BehaviourTreeAgent
     public override void Start()
     {
         base.Start();
-        RandomSelector selectObjectToSteal = new RandomSelector("Select Art To Look At");
+        RandomSelector selectObject = new RandomSelector("Select Art To Look At");
         for (int i = 0; i < art.Length; i++)
         {
             Leaf goToArt = new Leaf("Go To Art "+art[i].name, i,GoToArt);
-            selectObjectToSteal.AddChild(goToArt);
+            selectObject.AddChild(goToArt);
         }
 
         Leaf goToFrontDoor = new Leaf("Go To Front Door", GoToFrontDoor);
@@ -29,10 +29,19 @@ public class VisitorBehaviour : BehaviourTreeAgent
         Sequence viewArt = new Sequence("View Art");
         viewArt.AddChild(isBored);
         viewArt.AddChild(goToFrontDoor);
-        viewArt.AddChild(selectObjectToSteal);
+
+        BehaviourTree whileBored = new BehaviourTree();
+        whileBored.AddChild(isBored);
+
+        Loop lookAtArt = new Loop("Look At Art", whileBored);
+        lookAtArt.AddChild(selectObject);
+
+        viewArt.AddChild(lookAtArt);
+
         viewArt.AddChild(goToHomeBase);
 
         Selector beVisitor = new Selector("Be Visitor");
+
         beVisitor.AddChild(viewArt);
 
         Tree.AddChild(beVisitor);
@@ -58,7 +67,7 @@ public class VisitorBehaviour : BehaviourTreeAgent
         Node.Status status = GoToLocation(art[i].transform.position);
         if (status == Node.Status.Success)
         {
-            boredomThreshold = Mathf.Clamp(boredomThreshold - 500, 0, 1000);
+            boredomThreshold = Mathf.Clamp(boredomThreshold + 50, 0, 1000);
         }
         return status;
     } 
