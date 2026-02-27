@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.SocialPlatforms.Impl;
 
 public class VisitorBehaviour : BehaviourTreeAgent
 {
@@ -25,8 +26,10 @@ public class VisitorBehaviour : BehaviourTreeAgent
         Leaf goToFrontDoor = new Leaf("Go To Front Door", GoToFrontDoor);
         Leaf goToHomeBase = new Leaf("Go To Home Base", GoToHomeBase);
         Leaf isBored = new Leaf("Is Bored?", IsBored);
+        Leaf isOpen = new Leaf("Is Open?", IsOpen);
 
         Sequence viewArt = new Sequence("View Art");
+        viewArt.AddChild(isOpen);
         viewArt.AddChild(isBored);
         viewArt.AddChild(goToFrontDoor);
 
@@ -37,14 +40,18 @@ public class VisitorBehaviour : BehaviourTreeAgent
         lookAtArt.AddChild(selectObject);
 
         viewArt.AddChild(lookAtArt);
-
         viewArt.AddChild(goToHomeBase);
 
-        Selector beVisitor = new Selector("Be Visitor");
-
+        BehaviourTree gallaryOpenCondition = new BehaviourTree();
+        gallaryOpenCondition.AddChild(isOpen);
+        DependencySequence beVisitor = new DependencySequence("Be Visitor", gallaryOpenCondition,agent);
         beVisitor.AddChild(viewArt);
 
-        Tree.AddChild(beVisitor);
+        Selector viewArtWithFallback = new Selector("View Art With Fallback");
+        viewArtWithFallback.AddChild(beVisitor);
+        viewArtWithFallback.AddChild(goToHomeBase);
+
+        Tree.AddChild(viewArtWithFallback);
 
         StartCoroutine(IncreaseBoredom());
     }
@@ -67,10 +74,10 @@ public class VisitorBehaviour : BehaviourTreeAgent
         Node.Status status = GoToLocation(art[i].transform.position);
         if (status == Node.Status.Success)
         {
-            boredomThreshold = Mathf.Clamp(boredomThreshold + 50, 0, 1000);
+            boredomThreshold = Mathf.Clamp(boredomThreshold - 150, 0, 1000);
         }
         return status;
-    } 
+    }
 
     private Node.Status GoToFrontDoor()
     {
@@ -87,6 +94,18 @@ public class VisitorBehaviour : BehaviourTreeAgent
     public Node.Status IsBored()
     {
         if(boredomThreshold <= 100)
+        {
+            return Node.Status.Failure;
+        }
+        else
+        {
+            return Node.Status.Success;
+        }
+    }
+
+        public Node.Status IsOpen()
+    {
+        if(Blackboard.Instance.timeOfDay <= 8 || Blackboard.Instance.timeOfDay >= 18)
         {
             return Node.Status.Failure;
         }
