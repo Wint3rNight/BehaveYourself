@@ -10,7 +10,7 @@ public class VisitorBehaviour : BehaviourTreeAgent
     public GameObject frontDoor;
     public GameObject homeBase;
 
-    [Range(0,1000)]
+    [Range(0, 1000)]
     public int boredomThreshold = 0;
 
     public bool ticket = false;
@@ -22,27 +22,27 @@ public class VisitorBehaviour : BehaviourTreeAgent
         RandomSelector selectObject = new RandomSelector("Select Art To Look At");
         for (int i = 0; i < art.Length; i++)
         {
-            Leaf goToArt = new Leaf("Go To Art "+art[i].name, i,GoToArt);
+            Leaf goToArt = new Leaf(name + " Go To Art " + art[i].name, i, GoToArt);
             selectObject.AddChild(goToArt);
         }
 
-        Leaf goToFrontDoor = new Leaf("Go To Front Door", GoToFrontDoor);
-        Leaf goToHomeBase = new Leaf("Go To Home Base", GoToHomeBase);
-        Leaf isBored = new Leaf("Is Bored?", IsBored);
-        Leaf isOpen = new Leaf("Is Open?", IsOpen);
+        Leaf goToFrontDoor = new Leaf(name + " Go To Front Door", GoToFrontDoor);
+        Leaf goToHomeBase = new Leaf(name + " Go To Home Base", GoToHomeBase);
+        Leaf isBored = new Leaf(name + " Is Bored?", IsBored);
+        Leaf isOpen = new Leaf(name + " Is Open?", IsOpen);
 
-        Sequence viewArt = new Sequence("View Art");
+        Sequence viewArt = new Sequence(name + " View Art");
         viewArt.AddChild(isOpen);
         viewArt.AddChild(isBored);
         viewArt.AddChild(goToFrontDoor);
 
-        Leaf noTicket = new Leaf("No Ticket?", NoTicket);
-        Leaf isWaiting = new Leaf("Is Waiting?", IsWaiting);
+        Leaf noTicket = new Leaf(name + " No Ticket?", NoTicket);
+        Leaf isWaiting = new Leaf(name + " Is Waiting?", IsWaiting);
 
         BehaviourTree waitingForTicket = new BehaviourTree();
         waitingForTicket.AddChild(noTicket);
 
-        Loop getTicket = new Loop("Get Ticket", waitingForTicket);
+        Loop getTicket = new Loop(name + " Get Ticket", waitingForTicket);
         getTicket.AddChild(isWaiting);
 
         viewArt.AddChild(getTicket);
@@ -50,7 +50,7 @@ public class VisitorBehaviour : BehaviourTreeAgent
         BehaviourTree whileBored = new BehaviourTree();
         whileBored.AddChild(isBored);
 
-        Loop lookAtArt = new Loop("Look At Art", whileBored);
+        Loop lookAtArt = new Loop(name + " Look At Art", whileBored);
         lookAtArt.AddChild(selectObject);
 
         viewArt.AddChild(lookAtArt);
@@ -58,10 +58,10 @@ public class VisitorBehaviour : BehaviourTreeAgent
 
         BehaviourTree gallaryOpenCondition = new BehaviourTree();
         gallaryOpenCondition.AddChild(isOpen);
-        DependencySequence beVisitor = new DependencySequence("Be Visitor", gallaryOpenCondition,agent);
+        DependencySequence beVisitor = new DependencySequence(name + " Be Visitor", gallaryOpenCondition, agent);
         beVisitor.AddChild(viewArt);
 
-        Selector viewArtWithFallback = new Selector("View Art With Fallback");
+        Selector viewArtWithFallback = new Selector(name + " View Art With Fallback");
         viewArtWithFallback.AddChild(beVisitor);
         viewArtWithFallback.AddChild(goToHomeBase);
 
@@ -108,7 +108,7 @@ public class VisitorBehaviour : BehaviourTreeAgent
 
     public Node.Status IsBored()
     {
-        if(boredomThreshold <= 100)
+        if (boredomThreshold <= 100)
         {
             return Node.Status.Failure;
         }

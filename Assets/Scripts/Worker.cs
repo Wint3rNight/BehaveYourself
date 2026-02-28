@@ -7,12 +7,12 @@ public class Worker : BehaviourTreeAgent
     public override void Start()
     {
         base.Start();
-        Leaf visitorStillWaiting = new Leaf("Visitor Still Waiting?", VisitorWaiting);
-        Leaf allocateVisitor = new Leaf("Allocate Visitor", AllocateVisitor);
-        Leaf goToVisitor = new Leaf("Go To Visitor", GoToVisitor);
-        Leaf goToOffice = new Leaf("Go To Office", GoToOffice);
+        Leaf visitorStillWaiting = new Leaf(name + " Visitor Still Waiting?", VisitorWaiting);
+        Leaf allocateVisitor = new Leaf(name + " Allocate Visitor", AllocateVisitor);
+        Leaf goToVisitor = new Leaf(name + " Go To Visitor", GoToVisitor);
+        Leaf goToOffice = new Leaf(name + " Go To Office", GoToOffice);
 
-        Sequence getVisitor = new Sequence("Get Visitor");
+        Sequence getVisitor = new Sequence(name + " Get Visitor");
         getVisitor.AddChild(allocateVisitor);
 
         BehaviourTree waiting = new BehaviourTree();
