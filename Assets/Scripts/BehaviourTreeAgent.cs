@@ -55,7 +55,7 @@ public class BehaviourTreeAgent : MonoBehaviour
 
     public Node.Status IsOpen()
     {
-        if(Blackboard.Instance.timeOfDay <= 8 || Blackboard.Instance.timeOfDay >= 18)
+        if(Blackboard.Instance.timeOfDay < Blackboard.Instance.openTime || Blackboard.Instance.timeOfDay >= Blackboard.Instance.closeTime)
         {
             return Node.Status.Failure;
         }

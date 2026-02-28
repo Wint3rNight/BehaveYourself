@@ -13,6 +13,8 @@ public class VisitorBehaviour : BehaviourTreeAgent
     [Range(0,1000)]
     public int boredomThreshold = 0;
 
+    public bool ticket = false;
+
     public override void Start()
     {
         base.Start();
@@ -32,6 +34,17 @@ public class VisitorBehaviour : BehaviourTreeAgent
         viewArt.AddChild(isOpen);
         viewArt.AddChild(isBored);
         viewArt.AddChild(goToFrontDoor);
+
+        Leaf noTicket = new Leaf("No Ticket?", NoTicket);
+        Leaf isWaiting = new Leaf("Is Waiting?", IsWaiting);
+
+        BehaviourTree waitingForTicket = new BehaviourTree();
+        waitingForTicket.AddChild(noTicket);
+
+        Loop getTicket = new Loop("Get Ticket", waitingForTicket);
+        getTicket.AddChild(isWaiting);
+
+        viewArt.AddChild(getTicket);
 
         BehaviourTree whileBored = new BehaviourTree();
         whileBored.AddChild(isBored);
@@ -100,6 +113,30 @@ public class VisitorBehaviour : BehaviourTreeAgent
         else
         {
             return Node.Status.Success;
+        }
+    }
+
+    public Node.Status NoTicket()
+    {
+        if (ticket || IsOpen() == Node.Status.Failure)
+        {
+            return Node.Status.Failure;
+        }
+        else
+        {
+            return Node.Status.Success;
+        }
+    }
+
+    public Node.Status IsWaiting()
+    {
+        if (Blackboard.Instance.RegisterVisitor(this.gameObject))
+        {
+            return Node.Status.Success;
+        }
+        else
+        {
+            return Node.Status.Failure;
         }
     }
 }

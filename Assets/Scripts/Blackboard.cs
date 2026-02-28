@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -6,6 +7,10 @@ public class Blackboard : MonoBehaviour
 {
     public float timeOfDay;
     public Text clock;
+    public Stack<GameObject> visitors = new Stack<GameObject>();
+    public int openTime = 6;
+    public int closeTime = 22;
+
     static Blackboard _instance;
     public static Blackboard Instance
     {
@@ -16,7 +21,7 @@ public class Blackboard : MonoBehaviour
                 Blackboard[] blackboards = GameObject.FindObjectsByType<Blackboard>(FindObjectsSortMode.None);
                 if (blackboards != null)
                 {
-                    if(blackboards.Length == 1)
+                    if (blackboards.Length == 1)
                     {
                         _instance = blackboards[0];
                         return _instance;
@@ -44,12 +49,27 @@ public class Blackboard : MonoBehaviour
         while (true)
         {
             timeOfDay += 1;
-            if (timeOfDay >23)
+            if (timeOfDay > 23)
             {
                 timeOfDay = 0;
             }
             clock.text = timeOfDay + ":00";
+            if (timeOfDay == closeTime)
+            {
+                visitors.Clear();
+            }
             yield return new WaitForSeconds(1);
         }
+    }
+
+    public bool RegisterVisitor(GameObject v)
+    {
+        visitors.Push(v);
+        return true;
+    }
+
+    public void UnregisterVisitor()
+    {
+
     }
 }
