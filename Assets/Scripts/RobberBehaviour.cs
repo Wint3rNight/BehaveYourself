@@ -118,7 +118,6 @@ public class RobberBehaviour : BehaviourTreeAgent
         }
     }
 
-
     public Node.Status CanSeeCop()
     {
         return CanSee(cop.transform.position, "Cop", 10, 90);

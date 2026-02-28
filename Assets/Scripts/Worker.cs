@@ -7,13 +7,21 @@ public class Worker : BehaviourTreeAgent
     public override void Start()
     {
         base.Start();
+        Leaf visitorStillWaiting = new Leaf("Visitor Still Waiting?", VisitorWaiting);
         Leaf allocateVisitor = new Leaf("Allocate Visitor", AllocateVisitor);
         Leaf goToVisitor = new Leaf("Go To Visitor", GoToVisitor);
         Leaf goToOffice = new Leaf("Go To Office", GoToOffice);
 
         Sequence getVisitor = new Sequence("Get Visitor");
         getVisitor.AddChild(allocateVisitor);
-        getVisitor.AddChild(goToVisitor);
+
+        BehaviourTree waiting = new BehaviourTree();
+        waiting.AddChild(visitorStillWaiting);
+
+        DependencySequence moveToVisitor = new DependencySequence("Move To Visitor", waiting, agent);
+        moveToVisitor.AddChild(goToVisitor);
+
+        getVisitor.AddChild(moveToVisitor);
 
         Selector beWorker = new Selector("Be Worker");
         beWorker.AddChild(getVisitor);
@@ -24,12 +32,13 @@ public class Worker : BehaviourTreeAgent
 
     public Node.Status VisitorWaiting()
     {
-        if (visitor != null && visitor.GetComponent<VisitorBehaviour>().isWaiting == true)
+        if (visitor != null && visitor.GetComponent<VisitorBehaviour>().isWaiting)
         {
             return Node.Status.Success;
         }
         return Node.Status.Failure;
     }
+
     public Node.Status AllocateVisitor()
     {
         if (Blackboard.Instance.visitors.Count == 0)
