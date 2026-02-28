@@ -7,24 +7,54 @@ public class Worker : BehaviourTreeAgent
     public override void Start()
     {
         base.Start();
+        Leaf allocateVisitor = new Leaf("Allocate Visitor", AllocateVisitor);
         Leaf goToVisitor = new Leaf("Go To Visitor", GoToVisitor);
         Leaf goToOffice = new Leaf("Go To Office", GoToOffice);
+
+        Sequence getVisitor = new Sequence("Get Visitor");
+        getVisitor.AddChild(allocateVisitor);
+        getVisitor.AddChild(goToVisitor);
+
         Selector beWorker = new Selector("Be Worker");
-        beWorker.AddChild(goToVisitor);
+        beWorker.AddChild(getVisitor);
         beWorker.AddChild(goToOffice);
 
         Tree.AddChild(beWorker);
     }
 
-    public Node.Status GoToVisitor()
+    public Node.Status VisitorWaiting()
     {
-        if(Blackboard.Instance.visitors.Count == 0)
+        if (visitor != null && visitor.GetComponent<VisitorBehaviour>().isWaiting == true)
+        {
+            return Node.Status.Success;
+        }
+        return Node.Status.Failure;
+    }
+    public Node.Status AllocateVisitor()
+    {
+        if (Blackboard.Instance.visitors.Count == 0)
         {
             return Node.Status.Failure;
         }
 
         visitor = Blackboard.Instance.visitors.Pop();
+        if (visitor == null)
+        {
+            return Node.Status.Failure;
+        }
+
+        return Node.Status.Success;
+    }
+
+    public Node.Status GoToVisitor()
+    {
+        if (visitor == null)
+        {
+            return Node.Status.Failure;
+        }
+
         Node.Status status = GoToLocation(visitor.transform.position);
+
         if (status == Node.Status.Success)
         {
             visitor.GetComponent<VisitorBehaviour>().ticket = true;
@@ -36,6 +66,7 @@ public class Worker : BehaviourTreeAgent
     public Node.Status GoToOffice()
     {
         Node.Status status = GoToLocation(office.transform.position);
+        visitor = null;
         return status;
     }
 }

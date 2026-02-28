@@ -14,6 +14,7 @@ public class VisitorBehaviour : BehaviourTreeAgent
     public int boredomThreshold = 0;
 
     public bool ticket = false;
+    public bool isWaiting = false;
 
     public override void Start()
     {
@@ -101,6 +102,7 @@ public class VisitorBehaviour : BehaviourTreeAgent
     private Node.Status GoToHomeBase()
     {
         Node.Status status = GoToLocation(homeBase.transform.position);
+        isWaiting = false;
         return status;
     }
 
@@ -132,6 +134,7 @@ public class VisitorBehaviour : BehaviourTreeAgent
     {
         if (Blackboard.Instance.RegisterVisitor(this.gameObject))
         {
+            isWaiting = true;
             return Node.Status.Success;
         }
         else
